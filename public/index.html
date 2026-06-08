@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dev-Pulse</title>
+<link rel="stylesheet" href="/css/style.css?v=6"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%233cb898'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='system-ui' font-weight='700' font-size='20' fill='%23131a22'%3E⚡%3C/text%3E%3C/svg%3E"/>
+</head>
+<body>
+<div class="app">
+
+<!-- ═══════ Sidebar ═══════ -->
+<aside class="sidebar">
+  <div class="logo">
+    <a href="#"><span class="logo-mark">⚡</span><span class="logo-text">dev-pulse<span class="logo-ver">v3.0</span></span></a>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item active" data-page="dashboard">
+      <span class="icon">▤</span><span data-i18n="nav.dashboard">Dashboard</span>
+    </div>
+    <div class="nav-item" data-page="focus">
+      <span class="icon">◎</span><span data-i18n="nav.focus">Focus</span>
+      <span class="badge pulse" id="focus-badge" style="display:none">●</span>
+    </div>
+    <div class="nav-item" data-page="tasks">
+      <span class="icon">☰</span><span data-i18n="nav.tasks">Tasks</span>
+      <span class="badge" id="task-badge" style="display:none">0</span>
+    </div>
+    <div class="nav-item" data-page="github">
+      <span class="icon">⬡</span><span data-i18n="nav.github">GitHub</span>
+    </div>
+    <div class="nav-item" data-page="settings">
+      <span class="icon">⚙</span><span data-i18n="nav.settings">Settings</span>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sf-row"><span>Focus</span><span class="sf-val" id="sf-focus">0m</span></div>
+    <div class="sf-row"><span>Tasks</span><span class="sf-val" id="sf-tasks">0</span></div>
+    <div class="sf-row"><span>Sessions</span><span class="sf-val" id="sf-sessions">0</span></div>
+    <div class="sf-row"><span class="sf-ver" id="sf-version">v3.0</span></div>
+  </div>
+</aside>
+
+<!-- ═══════ Main ═══════ -->
+<main class="main">
+
+<!-- ── Dashboard ── -->
+<section class="page active visible" id="page-dashboard">
+  <div class="page-header">
+    <div><h1><span id="greeting">Good morning</span></h1><span class="subtitle" id="current-date"></span></div>
+    <button class="btn" id="btn-weekly-report" data-i18n="report.weekly">📄 Export Report</button>
+  </div>
+
+  <div class="hero">
+    <div class="hero-ring">
+      <svg width="170" height="170" viewBox="0 0 170 170">
+        <circle class="bg" cx="85" cy="85" r="76"/>
+        <circle class="fg" cx="85" cy="85" r="76" stroke-dasharray="477.5" stroke-dashoffset="477.5" id="focus-circle"/>
+      </svg>
+      <div class="val"><span class="num" id="focus-minutes">0</span><span class="unit" data-i18n="dashboard.minutes_unit">min</span></div>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="val gr" id="sessions-done">0</div><div class="lbl" data-i18n="dashboard.sessions">Sessions</div></div>
+      <div class="hero-stat"><div class="val ac" id="tasks-completed">0</div><div class="lbl" data-i18n="dashboard.tasks_done">Done</div></div>
+      <div class="hero-stat"><div class="val pu" id="goal-percent">0%</div><div class="lbl" data-i18n="dashboard.daily_goal">Goal</div></div>
+    </div>
+  </div>
+
+  <div class="info-row">
+    <div id="streak-info" style="font-size:var(--fs-sm);color:var(--amber);font-weight:520"></div>
+    <div id="tag-pills" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"></div>
+  </div>
+  <div id="tag-donut" style="margin-bottom:var(--sp-4)"></div>
+
+  <div class="summary-msg" id="daily-summary-msg"></div>
+
+  <div class="dash-body">
+    <div class="dash-section">
+      <div class="section-label" data-i18n="dashboard.this_week">This Week</div>
+      <div id="weekly-chart"><div class="empty-state"><p data-i18n="dashboard.no_stats">Start a focus session to see your stats</p></div></div>
+    </div>
+    <div class="dash-section">
+      <div class="section-label" data-i18n="dashboard.priority_tasks">Priority Tasks</div>
+      <div id="dashboard-tasks"><div class="empty-state"><p data-i18n="dashboard.empty_tasks">No tasks yet.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Focus ── -->
+<section class="page" id="page-focus">
+  <div class="page-header">
+    <div><h1 data-i18n="focus.title">Focus Mode</h1><span class="subtitle" data-i18n="focus.subtitle">Deep work, uninterrupted.</span></div>
+  </div>
+  <div class="focus-layout">
+    <div class="focus-timer" id="focus-timer-panel">
+      <div class="focus-ring">
+        <svg width="200" height="200" viewBox="0 0 200 200">
+          <circle class="bg" cx="100" cy="100" r="88"/>
+          <circle class="fg" cx="100" cy="100" r="88" stroke-dasharray="553" stroke-dashoffset="0" id="timer-progress"/>
+        </svg>
+        <div class="time-wrap"><div class="time" id="timer-display">25:00</div><div class="mode" id="timer-label">Pomodoro</div></div>
+      </div>
+      <div class="focus-controls">
+        <button class="btn primary" id="btn-timer-start" data-i18n="focus.start">▶ Start</button>
+        <button class="btn" id="btn-timer-pause" disabled data-i18n="focus.pause">⏸ Pause</button>
+        <button class="btn danger" id="btn-timer-stop" disabled data-i18n="focus.stop">⏹ Stop</button>
+      </div>
+      <div class="focus-modes">
+        <button class="mode-btn active" data-mode="pomodoro" data-duration="25">25m</button>
+        <button class="mode-btn" data-mode="deep_work" data-duration="50">50m</button>
+        <button class="mode-btn" data-mode="short_break" data-duration="5">5m</button>
+        <button class="mode-btn" data-mode="long_break" data-duration="15">15m</button>
+      </div>
+      <div class="section-label" style="text-align:center;margin-top:var(--sp-4)" data-i18n="focus.task_label">Link Task</div>
+      <select class="form-input" id="focus-task-select" style="width:100%;font-size:var(--fs-xs);padding:6px 8px;margin-bottom:var(--sp-3)">
+        <option value="0">--</option>
+      </select>
+      <div class="section-label" style="text-align:center;margin-top:var(--sp-3)" data-i18n="tag.selector_label">Tag</div>
+      <div class="tag-grid">
+        <button class="tag-opt active" data-tag="">⊘ <span data-i18n="tag.none">No tag</span></button>
+        <button class="tag-opt" data-tag="coding">💻 <span data-i18n="tag.coding">Coding</span></button>
+        <button class="tag-opt" data-tag="meeting">🤝 <span data-i18n="tag.meeting">Meeting</span></button>
+        <button class="tag-opt" data-tag="learning">📚 <span data-i18n="tag.learning">Learning</span></button>
+        <button class="tag-opt" data-tag="debugging">🐛 <span data-i18n="tag.debugging">Debugging</span></button>
+        <button class="tag-opt" data-tag="writing">📝 <span data-i18n="tag.writing">Writing</span></button>
+        <button class="tag-opt" data-tag="reviewing">👀 <span data-i18n="tag.reviewing">Reviewing</span></button>
+        <button class="tag-opt" data-tag="planning">🗺 <span data-i18n="tag.planning">Planning</span></button>
+      </div>
+      <div class="shortcut-hint"><kbd>Space</kbd> Start/Pause <kbd>Esc</kbd> Stop</div>
+    </div>
+    <div class="focus-sessions">
+      <div class="section-label" data-i18n="focus.today_sessions">Today's Sessions</div>
+      <div class="session-list" id="session-list">
+        <div class="empty-state"><p data-i18n="focus.no_sessions">No sessions yet today</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Tasks ── -->
+<section class="page" id="page-tasks">
+  <div class="page-header">
+    <div><h1 data-i18n="tasks.title">Tasks</h1><span class="subtitle" data-i18n="tasks.subtitle">What needs your attention?</span></div>
+  </div>
+  <div class="task-toolbar">
+    <button class="btn primary" id="btn-add-task" data-i18n="tasks.new">+ New Task</button>
+    <button class="btn" data-filter="all" data-i18n="tasks.all">All</button>
+    <button class="btn" data-filter="todo" data-i18n="tasks.todo">Todo</button>
+    <button class="btn" data-filter="in_progress" data-i18n="tasks.in_progress">In Progress</button>
+    <button class="btn" data-filter="done" data-i18n="tasks.done">Done</button>
+  </div>
+  <div class="task-box">
+    <div id="task-list"><div class="empty-state"><p data-i18n="tasks.empty">No tasks yet.</p></div></div>
+  </div>
+</section>
+
+<!-- ── GitHub ── -->
+<section class="page" id="page-github">
+  <div class="page-header">
+    <div><h1 data-i18n="github.title">GitHub Pulse</h1><span class="subtitle" data-i18n="github.subtitle">Your issues, PRs, and activity.</span></div>
+  </div>
+  <div class="gh-grid">
+    <div class="gh-panel"><div class="section-label" data-i18n="github.issues">Issues</div><div id="github-issues"><div class="empty-state"><p data-i18n="github.connect_hint">Connect GitHub in Settings</p></div></div></div>
+    <div class="gh-panel"><div class="section-label" data-i18n="github.pulls">Pull Requests</div><div id="github-pulls"><div class="empty-state"><p data-i18n="github.connect_pr">Connect GitHub to see your PRs</p></div></div></div>
+    <div class="gh-panel"><div class="section-label" data-i18n="github.notifications">Notifications</div><div id="github-notifications"><div class="empty-state"><p data-i18n="github.no_notifications">No unread notifications</p></div></div></div>
+    <div class="gh-panel"><div class="section-label" data-i18n="github.events">Activity</div><div id="github-events"><div class="empty-state"><p data-i18n="github.connect_events">Connect GitHub to see your activity</p></div></div></div>
+  </div>
+</section>
+
+<!-- ── Settings ── -->
+<section class="page" id="page-settings">
+  <div class="page-header">
+    <div><h1 data-i18n="settings.title">Settings</h1><span class="subtitle" data-i18n="settings.subtitle">Configure your experience.</span></div>
+  </div>
+  <div class="settings-block">
+    <div class="settings-section">
+      <h3 data-i18n="settings.language">Language</h3>
+      <div class="pill-group">
+        <button class="pill-opt" id="btn-lang-zh">中文</button>
+        <button class="pill-opt active" id="btn-lang-en">English</button>
+      </div>
+      <div class="form-hint" data-i18n="settings.lang_hint">Switch UI display language.</div>
+    </div>
+    <div class="settings-section">
+      <h3 data-i18n="settings.theme">Theme</h3>
+      <div class="pill-group">
+        <button class="pill-opt active" id="btn-theme-dark">Dark</button>
+        <button class="pill-opt" id="btn-theme-light">Light</button>
+      </div>
+      <div class="form-hint" data-i18n="settings.theme_hint">Dark or light appearance.</div>
+    </div>
+    <div class="settings-section">
+      <h3 data-i18n="settings.github_integration">GitHub Integration</h3>
+      <div class="form-group">
+        <label data-i18n="settings.token_label">Personal Access Token</label>
+        <div class="form-row">
+          <input type="password" class="form-input" id="github-token" placeholder="ghp_xxx"/>
+          <button class="btn primary" id="btn-github-verify" data-i18n="settings.verify">Verify</button>
+        </div>
+        <div class="form-hint" data-i18n="settings.token_hint">Create a token at github.com/settings/tokens</div>
+      </div>
+      <div id="github-status" style="margin-top:8px;font-size:var(--fs-xs)"></div>
+    </div>
+    <div class="settings-section">
+      <h3 data-i18n="settings.focus_section">Focus</h3>
+      <div class="form-group" style="display:inline-block;margin-right:var(--sp-6)">
+        <label data-i18n="settings.daily_goal">Daily Goal (minutes)</label>
+        <input type="number" class="form-input" id="daily-goal" min="30" max="600" value="240" style="max-width:120px"/>
+      </div>
+      <div class="form-group" style="display:inline-block">
+        <label data-i18n="settings.pomodoro_dur">Pomodoro (minutes)</label>
+        <input type="number" class="form-input" id="pomodoro-dur" min="5" max="60" value="25" style="max-width:120px"/>
+      </div>
+    </div>
+    <div class="settings-sticky-save" id="settings-sticky-save">
+      <span class="settings-save-indicator" id="settings-save-indicator" style="display:none"></span>
+      <button class="btn primary" id="btn-save-settings" data-i18n="settings.save">Save Settings</button>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<div class="toast" id="toast" style="display:none"></div>
+
+<!-- Task Modal -->
+<div class="modal-overlay hidden" id="task-modal">
+  <div class="modal-box">
+    <div class="section-label" data-i18n="task_modal.title">New Task</div>
+    <div class="form-group">
+      <label data-i18n="task_modal.label_title">Title</label>
+      <input type="text" class="form-input" id="new-task-title" data-i18n-placeholder="task_modal.placeholder" placeholder="What needs to be done?"/>
+    </div>
+    <div class="form-group">
+      <label data-i18n="task_modal.label_desc">Description (optional)</label>
+      <input type="text" class="form-input" id="new-task-desc" data-i18n-placeholder="task_modal.desc_placeholder" placeholder="Brief description..."/>
+    </div>
+    <div class="form-group">
+      <label data-i18n="task_modal.priority">Priority</label>
+      <select class="form-input" id="new-task-priority" style="max-width:160px">
+        <option value="low" data-i18n="tasks.priority.low">Low</option>
+        <option value="medium" selected data-i18n="tasks.priority.medium">Medium</option>
+        <option value="high" data-i18n="tasks.priority.high">High</option>
+        <option value="urgent" data-i18n="tasks.priority.urgent">Urgent</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:var(--sp-4)">
+      <button class="btn" id="btn-cancel-task" data-i18n="task_modal.cancel">Cancel</button>
+      <button class="btn primary" id="btn-save-task" data-i18n="task_modal.create">Create Task</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/i18n.js"></script>
+<script src="/js/app.js"></script>
+<script src="/js/timer.js"></script>
+<script src="/js/tasks.js"></script>
+<script src="/js/github.js"></script>
+<script src="/js/settings.js"></script>
+</body>
+</html>

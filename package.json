@@ -1,0 +1,21 @@
+{
+  "name": "dev-pulse",
+  "version": "1.0.0",
+  "description": "Developer Productivity Dashboard — your command center for deep work",
+  "main": "server.js",
+  "bin": {
+    "dev-pulse": "./cli.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["productivity", "dashboard", "pomodoro", "github", "developer-tools"],
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "better-sqlite3": "^11.0.0",
+    "cors": "^2.8.5",
+    "node-fetch": "^2.7.0"
+  }
+}
