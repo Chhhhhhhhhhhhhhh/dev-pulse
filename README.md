@@ -1,5 +1,7 @@
 # ⚡ Dev-Pulse
 
+[English](./README.md) | [中文](./README_zh.md)
+
 **Developer Productivity Dashboard** — your command center for deep work.
 
 Track focus sessions, manage tasks, sync GitHub activity, and generate weekly reports — all from one industrial-grade dashboard.
