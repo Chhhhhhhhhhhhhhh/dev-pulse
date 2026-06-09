@@ -57,9 +57,10 @@ function setTheme(theme, showToastMsg = false) {
   }
 }
 
-// Force dark theme on load
+// Load saved theme on startup
 (function loadTheme() {
-  document.documentElement.setAttribute("data-theme", "dark");
+  const saved = localStorage.getItem("dev-pulse-theme") || "dark";
+  document.documentElement.setAttribute("data-theme", saved);
 })();
 
 // Language toggle

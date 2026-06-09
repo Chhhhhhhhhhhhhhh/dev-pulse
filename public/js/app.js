@@ -34,26 +34,23 @@ function showToast(msg, duration = 2500) {
   setTimeout(() => (toast.style.display = "none"), duration);
 }
 
-// Navigation with page transition
-document.querySelectorAll(".nav-item").forEach((item) => {
-  item.addEventListener("click", () => {
-    const page = item.dataset.page;
+// Navigation
+document.querySelectorAll(".topnav-link").forEach((link) => {
+  link.addEventListener("click", () => {
+    const page = link.dataset.page;
     const current = document.querySelector(".page.active");
     const next = document.getElementById(`page-${page}`);
+    if (!next || current === next) return;
 
-    // Deactivate current
-    if (current) current.classList.remove("active", "visible");
-
-    // Update nav
-    document.querySelectorAll(".nav-item").forEach((n) => n.classList.remove("active"));
-    item.classList.add("active");
-
-    // Activate next with transition
+    // Switch pages
+    if (current) current.classList.remove("active");
     next.classList.add("active");
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => next.classList.add("visible"));
-    });
 
+    // Update nav active state
+    document.querySelectorAll(".topnav-link").forEach((l) => l.classList.remove("active"));
+    link.classList.add("active");
+
+    // Refresh target page
     if (page === "dashboard") refreshDashboard();
     if (page === "focus") refreshFocus();
     if (page === "tasks") refreshTasks();
@@ -93,13 +90,14 @@ async function refreshDashboard() {
   const offset = circumference - (focus.progress / 100) * circumference;
   circle.setAttribute("stroke-dashoffset", offset);
 
-  // Sidebar footer stats
-  const sfFocus = document.getElementById("sf-focus");
-  const sfTasks = document.getElementById("sf-tasks");
-  const sfSessions = document.getElementById("sf-sessions");
-  if (sfFocus) sfFocus.textContent = focus.focusMinutes + "m";
-  if (sfTasks) sfTasks.textContent = tasks.todo + tasks.inProgress;
-  if (sfSessions) sfSessions.textContent = focus.sessions.length;
+  // Topnav right stats
+  const tnFocus = document.getElementById("tn-focus");
+  const tnTasks = document.getElementById("tn-tasks");
+  const tnSessions = document.getElementById("tn-sessions");
+  const tasks = data.tasks;
+  if (tnFocus) tnFocus.textContent = focus.focusMinutes + "m";
+  if (tnTasks) tnTasks.textContent = tasks.todo + tasks.inProgress;
+  if (tnSessions) tnSessions.textContent = focus.sessions.length;
 
   // Daily summary message
   try {
@@ -114,13 +112,13 @@ async function refreshDashboard() {
   // Streak
   try {
     const streak = data.streak;
-    if (streak) {
-      const sEl = document.getElementById("streak-info");
-      if (sEl) sEl.textContent = `🔥 ${streak.current} days · ${streak.thisWeek}/7 this week`;
+    const sEl = document.getElementById("streak-info");
+    if (sEl && streak) {
+      sEl.textContent = `🔥 ${streak.current} days · ${streak.thisWeek}/7 this week`;
     }
   } catch (e) {}
 
-  // Tag stats — show pills + donut
+  // Tag stats
   try {
     const tagStats = data.tagStats;
     const donutEl = document.getElementById("tag-donut");
@@ -132,21 +130,17 @@ async function refreshDashboard() {
     }
   } catch (e) {}
 
-  // Tasks
-  const tasks = data.tasks;
+  // Task badge in nav
   animateValue("tasks-completed", tasks.done);
   document.getElementById("task-badge").textContent = tasks.todo + tasks.inProgress;
   document.getElementById("task-badge").style.display =
-    tasks.todo + tasks.inProgress > 0 ? "inline" : "none";
+    tasks.todo + tasks.inProgress > 0 ? "inline-flex" : "none";
 
   // Priority tasks for dashboard
   const taskData = await API.get("/api/tasks?status=todo");
   const container = document.getElementById("dashboard-tasks");
   if (taskData.tasks.length === 0) {
-    container.innerHTML = `<div class="empty-state">
-      <svg class="empty-state-art" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" class="fill"/><path d="M16 24h16M24 16v16" stroke="var(--text-tertiary)" stroke-width="2" stroke-linecap="round"/></svg>
-      <p>${t("dashboard.all_clear")}</p>
-    </div>`;
+    container.innerHTML = `<div class="empty-state"><p>${t("dashboard.all_clear")}</p></div>`;
   } else {
     const priorityLabels = {
       low: t("tasks.priority.low"),
@@ -157,13 +151,13 @@ async function refreshDashboard() {
     container.innerHTML = taskData.tasks
       .slice(0, 5)
       .map(
-        (t) => `
+        (task) => `
       <div class="task-item">
-        <div class="task-checkbox" data-id="${t.id}" onclick="toggleTask(${t.id})"></div>
+        <div class="task-checkbox" data-id="${task.id}" onclick="toggleTask(${task.id})"></div>
         <div class="task-content">
-          <div class="task-title">${escapeHtml(t.title)}</div>
+          <div class="task-title">${escapeHtml(task.title)}</div>
           <div class="task-meta">
-            <span class="task-priority ${t.priority}">${priorityLabels[t.priority] || t.priority}</span>
+            <span class="task-priority ${task.priority}">${priorityLabels[task.priority] || task.priority}</span>
           </div>
         </div>
       </div>`
@@ -171,41 +165,34 @@ async function refreshDashboard() {
       .join("");
   }
 
-  // Weekly chart with goal line
+  // Weekly chart
   const stats = await API.get("/api/focus/stats?days=7");
   const chartDiv = document.getElementById("weekly-chart");
   if (stats.length === 0 || stats.every((s) => s.focus_minutes === 0)) {
-    chartDiv.innerHTML = `<div class="empty-state">
-      <svg class="empty-state-art" viewBox="0 0 48 48"><rect x="4" y="24" width="8" height="20" rx="1"/><rect x="14" y="16" width="8" height="28" rx="1"/><rect x="24" y="8" width="8" height="36" rx="1"/><rect x="34" y="20" width="8" height="24" rx="1"/></svg>
-      <p>${t("dashboard.no_stats")}</p>
-    </div>`;
+    chartDiv.innerHTML = `<div class="empty-state"><p>${t("dashboard.no_stats")}</p></div>`;
   } else {
     const maxMin = Math.max(...stats.map((s) => s.focus_minutes), 1);
-    const goalMin = parseInt(document.getElementById("daily-goal")?.value || "240");
-    const goalPct = Math.min(100, (goalMin / maxMin) * 100);
     const today = new Date().toISOString().split("T")[0];
     chartDiv.innerHTML = stats
       .slice()
       .reverse()
-      .map(
-        (s) => {
-          const isToday = s.day === today;
-          const barPct = (s.focus_minutes / maxMin) * 100;
-          return `
+      .map((s) => {
+        const isToday = s.day === today;
+        const barPct = (s.focus_minutes / maxMin) * 100;
+        return `
       <div class="chart-row">
         <div class="day">${formatDay(s.day)}</div>
         <div class="bar-track">
           <div class="bar-fill${isToday ? " today" : ""}" style="width:${barPct}%"></div>
         </div>
         <div class="bar-val">${Math.round(s.focus_minutes)}m</div>
-      </div>`
-        }
-      )
+      </div>`;
+      })
       .join("");
   }
 }
 
-// ── Count-up animation ──
+// Count-up animation
 function animateValue(id, target) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -224,7 +211,6 @@ function animateValue(id, target) {
   function step(now) {
     const elapsed = now - startTime;
     const progress = Math.min(elapsed / duration, 1);
-    // ease-out-quart
     const eased = 1 - Math.pow(1 - progress, 4);
     const current = Math.round(startVal + (targetNum - startVal) * eased);
     el.textContent = isPct ? current + "%" : String(current);
@@ -237,16 +223,16 @@ function animateValue(id, target) {
   requestAnimationFrame(step);
 }
 
-// ── Tag pills ──
+// Tag pills
 function renderTagPills(tagStats) {
   const pillEl = document.getElementById("tag-pills");
   if (!pillEl) return;
-  pillEl.innerHTML = tagStats.slice(0, 4).map(t =>
-    `<span class="tag-badge">${t("tag." + t.tag) || t.tag} ${Math.round(t.minutes)}m</span>`
+  pillEl.innerHTML = tagStats.slice(0, 4).map(tag =>
+    `<span class="tag-badge">${t("tag." + tag.tag) || tag.tag} ${Math.round(tag.minutes)}m</span>`
   ).join("");
 }
 
-// ── Tag donut chart ──
+// Tag donut chart
 const TAG_COLORS = ["var(--accent)", "var(--purple)", "var(--amber)", "var(--green)", "var(--red)"];
 function renderTagDonut(tagStats) {
   const donutEl = document.getElementById("tag-donut");
@@ -255,7 +241,7 @@ function renderTagDonut(tagStats) {
     return;
   }
   const top5 = tagStats.slice(0, 5);
-  const total = top5.reduce((s, t) => s + t.minutes, 0);
+  const total = top5.reduce((s, tag) => s + tag.minutes, 0);
   if (total === 0) { donutEl.innerHTML = ""; return; }
 
   const cx = 36, cy = 36, r = 28, sw = 8;
@@ -263,10 +249,10 @@ function renderTagDonut(tagStats) {
   let paths = "";
   let legend = "";
 
-  top5.forEach((t, i) => {
-    const pct = t.minutes / total;
+  top5.forEach((tag, i) => {
+    const pct = tag.minutes / total;
     const startAngle = (cumulative / total) * Math.PI * 2 - Math.PI / 2;
-    cumulative += t.minutes;
+    cumulative += tag.minutes;
     const endAngle = (cumulative / total) * Math.PI * 2 - Math.PI / 2;
     const largeArc = pct > 0.5 ? 1 : 0;
     const x1 = cx + r * Math.cos(startAngle);
@@ -276,7 +262,7 @@ function renderTagDonut(tagStats) {
 
     paths += `<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${largeArc},1 ${x2.toFixed(1)},${y2.toFixed(1)}" fill="none" stroke="${TAG_COLORS[i]}" stroke-width="${sw}" stroke-linecap="round"/>`;
 
-    legend += `<div class="tag-donut-row"><span class="tag-donut-swatch" style="background:${TAG_COLORS[i]}"></span><span class="tag-donut-label">${t("tag." + t.tag) || t.tag}</span><span class="tag-donut-val">${Math.round(t.minutes)}m</span></div>`;
+    legend += `<div class="tag-donut-row"><span class="tag-donut-swatch" style="background:${TAG_COLORS[i]}"></span><span class="tag-donut-label">${t("tag." + tag.tag) || tag.tag}</span><span class="tag-donut-val">${Math.round(tag.minutes)}m</span></div>`;
   });
 
   donutEl.innerHTML = `
@@ -287,7 +273,7 @@ function renderTagDonut(tagStats) {
     <div class="tag-donut-legend">${legend}</div>`;
 }
 
-// ── Onboarding ──
+// Onboarding
 function checkOnboarding() {
   const dismissed = localStorage.getItem("dev-pulse-onboarded");
   if (dismissed) return;
@@ -296,15 +282,12 @@ function checkOnboarding() {
   banner.className = "onboarding-banner";
   banner.id = "onboarding-banner";
   banner.innerHTML = `
-    <div class="ob-art">
-      <svg viewBox="0 0 56 56"><rect x="4" y="4" width="48" height="48" rx="6" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity=".3"/><circle cx="28" cy="28" r="18" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="28" cy="28" r="16" fill="none" stroke="var(--accent-muted)" stroke-width="1" stroke-dasharray="4 2"/><text x="28" y="34" text-anchor="middle" font-family="system-ui" font-size="22">⚡</text></svg>
-    </div>
     <div>
       <h3>Welcome to Dev-Pulse</h3>
-      <p>Track deep work, manage tasks, and sync GitHub — all from one industrial-grade dashboard.</p>
-      <button class="btn primary" onclick="startOnboarding()">▶ Start a focus session</button>
+      <p>Track deep work, manage tasks, and sync GitHub — all from one dashboard.</p>
+      <button class="btn primary" onclick="startOnboarding()">Start a focus session</button>
     </div>
-    <button class="onboarding-dismiss" onclick="dismissOnboarding()" title="Dismiss">✕</button>`;
+    <button class="onboarding-dismiss" onclick="dismissOnboarding()" title="Dismiss">&times;</button>`;
 
   const dashPage = document.getElementById("page-dashboard");
   const hero = dashPage?.querySelector(".hero");
@@ -313,7 +296,6 @@ function checkOnboarding() {
 
 function startOnboarding() {
   dismissOnboarding();
-  // Navigate to Focus page
   document.querySelector('[data-page="focus"]')?.click();
 }
 
@@ -340,7 +322,7 @@ function escapeHtml(str) {
 async function checkActiveFocus() {
   const data = await API.get("/api/focus/active");
   const badge = document.getElementById("focus-badge");
-  badge.style.display = data.active ? "inline" : "none";
+  if (badge) badge.style.display = data.active ? "inline-flex" : "none";
 }
 
 // Weekly report download
@@ -369,7 +351,7 @@ setInterval(() => {
   }
 }, 30000);
 
-// Refresh focus badge every 5s// Refresh periodically
+// Refresh focus badge every 5s
 setInterval(() => {
   checkActiveFocus();
 }, 5000);
