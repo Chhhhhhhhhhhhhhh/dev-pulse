@@ -82,15 +82,14 @@ document.querySelectorAll(".tag-opt").forEach((el) => {
   });
 });
 
-// Task selector
 const taskSelect = document.getElementById("focus-task-select");
 async function refreshTaskSelector() {
   if (!taskSelect) return;
   const data = await API.get("/api/tasks?status=todo");
   const tasks = data.tasks || [];
-  taskSelect.innerHTML = '<option value="0" data-i18n="tag.none">-- ' + t("tag.none") + ' --</option>';
-  tasks.forEach(t => {
-    taskSelect.innerHTML += `<option value="${t.id}">${escapeHtml(t.title.substring(0, 40))}</option>`;
+  taskSelect.innerHTML = '<option value="0">-- ' + t("tag.none") + ' --</option>';
+  tasks.forEach(task => {
+    taskSelect.innerHTML += `<option value="${task.id}">${escapeHtml(task.title.substring(0, 40))}</option>`;
   });
 }
 
@@ -145,12 +144,8 @@ btnStart.addEventListener("click", async () => {
   btnStart.disabled = true;
   btnPause.disabled = false;
   btnStop.disabled = false;
-  document.getElementById("focus-badge").style.display = "inline-flex";
+  document.getElementById("focus-badge").style.display = "inline";
   if (taskSelect) taskSelect.disabled = true;
-
-  // Glow animation on timer ring
-  const timerPanel = document.getElementById("focus-timer-panel");
-  if (timerPanel) timerPanel.classList.add("timer-running");
 
   timerState.intervalId = setInterval(() => {
     timerState.remaining--;
@@ -164,10 +159,7 @@ btnPause.addEventListener("click", () => {
   clearInterval(timerState.intervalId);
   timerState.running = false;
 
-  // Switch ring to amber "paused" state
   timerProgress.classList.add("paused");
-  const timerPanel = document.getElementById("focus-timer-panel");
-  if (timerPanel) timerPanel.classList.remove("timer-running");
 
   btnStart.disabled = false;
   btnStart.textContent = `▶ ${t("focus.resume")}`;
@@ -188,7 +180,6 @@ async function completeSession() {
   clearInterval(timerState.intervalId);
   timerState.running = false;
 
-  // Prompt for notes
   const note = prompt(t("focus.notes_prompt") || "What did you work on?", "");
   const notes = note ? note.trim() : "";
 
@@ -225,9 +216,6 @@ function resetTimer() {
   document.getElementById("focus-badge").style.display = "none";
   if (taskSelect) taskSelect.disabled = false;
 
-  // Remove glow and pause animations
-  const timerPanel = document.getElementById("focus-timer-panel");
-  if (timerPanel) timerPanel.classList.remove("timer-running");
   timerProgress.classList.remove("paused");
 
   updateTimerDisplay();
@@ -235,7 +223,7 @@ function resetTimer() {
 
 // ============ Session List ============
 
-let sessionViewMode = "list"; // "list" | "timeline"
+let sessionViewMode = "list";
 
 async function refreshFocus() {
   const data = await API.get("/api/focus/today");
@@ -243,17 +231,16 @@ async function refreshFocus() {
   let toggleBtn = document.getElementById("session-view-toggle");
 
   if (!toggleBtn) {
-    // Create toggle button
     const header = container.parentElement.querySelector(".section-label");
     if (header) {
       toggleBtn = document.createElement("button");
       toggleBtn.id = "session-view-toggle";
       toggleBtn.className = "btn";
       toggleBtn.style.cssText = "padding:1px 6px;font-size:.6rem;margin-left:auto;border-color:transparent;color:var(--text-tertiary)";
-      toggleBtn.textContent = sessionViewMode === "timeline" ? "≡ List" : "◷ Timeline";
+      toggleBtn.textContent = sessionViewMode === "timeline" ? "List" : "Timeline";
       toggleBtn.addEventListener("click", () => {
         sessionViewMode = sessionViewMode === "list" ? "timeline" : "list";
-        toggleBtn.textContent = sessionViewMode === "timeline" ? "≡ List" : "◷ Timeline";
+        toggleBtn.textContent = sessionViewMode === "timeline" ? "List" : "Timeline";
         refreshFocus();
       });
       header.style.display = "flex";
@@ -261,7 +248,7 @@ async function refreshFocus() {
       header.appendChild(toggleBtn);
     }
   } else {
-    toggleBtn.textContent = sessionViewMode === "timeline" ? "≡ List" : "◷ Timeline";
+    toggleBtn.textContent = sessionViewMode === "timeline" ? "List" : "Timeline";
   }
 
   if (data.sessions.length === 0) {
@@ -287,9 +274,9 @@ function renderSessionList(sessions, container) {
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
         <span style="color:var(--text-tertiary);font-size:var(--fs-xs);white-space:nowrap">
-          ${s.ended_at ? (s.completed ? `${Math.round(s.duration_seconds / 60)}m ✅` : `${Math.round(s.duration_seconds / 60)}m ⏹`) : `<span class="pulse">● ${t("focus.ongoing")}</span>`}
+          ${s.ended_at ? (s.completed ? `${Math.round(s.duration_seconds / 60)}m OK` : `${Math.round(s.duration_seconds / 60)}m x`) : `<span class="pulse">● ${t("focus.ongoing")}</span>`}
         </span>
-        <button class="btn" style="padding:1px 5px;font-size:.6rem;border-color:transparent;color:var(--text-disabled)" onclick="event.stopPropagation();deleteSession(${s.id})" title="Delete">✕</button>
+        <button class="btn" style="padding:1px 5px;font-size:.6rem;border-color:transparent;color:var(--text-disabled)" onclick="event.stopPropagation();deleteSession(${s.id})" title="Delete">&times;</button>
       </div>
     </div>`).join("");
 }
@@ -305,10 +292,10 @@ function renderSessionTimeline(sessions, container) {
       <span class="timeline-dot${s.session_type.includes("break") ? " break" : ""} ${s.session_type}"></span>
       <span class="timeline-time">${startOfDay(s)}</span>
       <span class="timeline-mode">${t(MODE_KEYS[s.session_type]) || s.session_type}</span>
-      ${s.ended_at ? `<span class="timeline-duration">${Math.round(s.duration_seconds / 60)}m ${s.completed ? "✓" : "✕"}</span>` : `<span class="pulse">● ${t("focus.ongoing")}</span>`}
+      ${s.ended_at ? `<span class="timeline-duration">${Math.round(s.duration_seconds / 60)}m ${s.completed ? "OK" : "x"}</span>` : `<span class="pulse">● ${t("focus.ongoing")}</span>`}
       ${s.tag ? `<span class="timeline-tag">${t("tag." + s.tag) || s.tag}</span>` : ""}
       ${s.notes ? `<div class="timeline-notes">${escapeHtml(s.notes)}</div>` : ""}
-      <button class="btn" style="padding:0 4px;font-size:.55rem;border-color:transparent;color:var(--text-disabled);margin-left:var(--sp-2)" onclick="event.stopPropagation();deleteSession(${s.id})" title="Delete">✕</button>
+      <button class="btn" style="padding:0 4px;font-size:.55rem;border-color:transparent;color:var(--text-disabled);margin-left:var(--sp-2)" onclick="event.stopPropagation();deleteSession(${s.id})" title="Delete">&times;</button>
     </div>`).join("") + `</div>`;
 }
 

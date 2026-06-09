@@ -4,7 +4,6 @@ const path = require("path");
 const db = require("./lib/database");
 const GitHubAPI = require("./lib/github");
 
-// Initialize database
 db.init();
 
 const app = express();
@@ -91,7 +90,6 @@ app.get("/api/summary/today", (req, res) => {
 
 app.get("/api/settings", (req, res) => {
   const settings = db.getAllSettings();
-  // Don't expose full token
   const token = settings.github_token || "";
   settings.github_token_masked = token ? token.substring(0, 6) + "..." : "";
   delete settings.github_token;
@@ -233,8 +231,6 @@ app.get("/api/report/weekly", (req, res) => {
   res.send(md);
 });
 
-// ============ Enhanced Daily Summary ============
-
 app.get("/api/summary/today/detailed", (req, res) => {
   const sessions = db.getTodaySessions();
   const completedSessions = sessions.filter(s => s.completed);
@@ -268,14 +264,6 @@ app.get("/api/summary/today/detailed", (req, res) => {
   });
 });
 
-// ============ Start ============
-
 app.listen(PORT, () => {
-  console.log(`
-  ╔══════════════════════════════════════════╗
-  ║   ⚡ Dev-Pulse v1.0.0                    ║
-  ║   Developer Productivity Dashboard      ║
-  ║   http://localhost:${PORT}                 ║
-  ╚══════════════════════════════════════════╝
-  `);
+  console.log(`⚡ Dev-Pulse v5.0  http://localhost:${PORT}`);
 });

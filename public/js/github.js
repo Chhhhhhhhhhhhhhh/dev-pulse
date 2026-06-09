@@ -9,11 +9,11 @@ async function loadIssues() {
   try {
     const data = await API.get("/api/github/issues");
     if (data.error) {
-      container.innerHTML = `<div class="empty-state"><div class="icon">🔑</div><p>${data.error}</p></div>`;
+      container.innerHTML = `<div class="empty-state"><p>${data.error}</p></div>`;
       return;
     }
     if (data.issues.length === 0) {
-      container.innerHTML = `<div class="empty-state"><p>${t("github.no_issues")} 🎉</p></div>`;
+      container.innerHTML = `<div class="empty-state"><p>${t("github.no_issues")}</p></div>`;
       return;
     }
     container.innerHTML = data.issues
@@ -74,7 +74,7 @@ async function loadNotifications() {
       return;
     }
     if (data.notifications.length === 0) {
-      container.innerHTML = `<div class="empty-state"><p>${t("github.no_notifications")} 🎉</p></div>`;
+      container.innerHTML = `<div class="empty-state"><p>${t("github.no_notifications")}</p></div>`;
       return;
     }
     container.innerHTML = data.notifications
@@ -82,7 +82,7 @@ async function loadNotifications() {
       .map(
         (n) => `
       <div class="gh-item">
-        <span class="gh-notif-icon">🔔</span>
+        <span class="gh-notif-icon">&#x1F514;</span>
         <div>
           <a href="${n.url}" target="_blank">${escapeHtml(n.title)}</a>
           <div class="gh-repo">${n.repo} · ${n.reason}</div>

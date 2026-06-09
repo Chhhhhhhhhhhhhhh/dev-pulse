@@ -35,22 +35,19 @@ function showToast(msg, duration = 2500) {
 }
 
 // Navigation
-document.querySelectorAll(".topnav-link").forEach((link) => {
-  link.addEventListener("click", () => {
-    const page = link.dataset.page;
+document.querySelectorAll(".nav-item").forEach((item) => {
+  item.addEventListener("click", () => {
+    const page = item.dataset.page;
     const current = document.querySelector(".page.active");
     const next = document.getElementById(`page-${page}`);
     if (!next || current === next) return;
 
-    // Switch pages
     if (current) current.classList.remove("active");
     next.classList.add("active");
 
-    // Update nav active state
-    document.querySelectorAll(".topnav-link").forEach((l) => l.classList.remove("active"));
-    link.classList.add("active");
+    document.querySelectorAll(".nav-item").forEach((n) => n.classList.remove("active"));
+    item.classList.add("active");
 
-    // Refresh target page
     if (page === "dashboard") refreshDashboard();
     if (page === "focus") refreshFocus();
     if (page === "tasks") refreshTasks();
@@ -79,7 +76,6 @@ function updateDate() {
 async function refreshDashboard() {
   const data = await API.get("/api/dashboard");
 
-  // Focus ring
   const focus = data.focus;
   animateValue("focus-minutes", focus.focusMinutes);
   animateValue("sessions-done", focus.sessions.length);
@@ -90,14 +86,14 @@ async function refreshDashboard() {
   const offset = circumference - (focus.progress / 100) * circumference;
   circle.setAttribute("stroke-dashoffset", offset);
 
-  // Topnav right stats
-  const tnFocus = document.getElementById("tn-focus");
-  const tnTasks = document.getElementById("tn-tasks");
-  const tnSessions = document.getElementById("tn-sessions");
+  // Sidebar footer stats
   const tasks = data.tasks;
-  if (tnFocus) tnFocus.textContent = focus.focusMinutes + "m";
-  if (tnTasks) tnTasks.textContent = tasks.todo + tasks.inProgress;
-  if (tnSessions) tnSessions.textContent = focus.sessions.length;
+  const sfFocus = document.getElementById("sf-focus");
+  const sfTasks = document.getElementById("sf-tasks");
+  const sfSessions = document.getElementById("sf-sessions");
+  if (sfFocus) sfFocus.textContent = focus.focusMinutes + "m";
+  if (sfTasks) sfTasks.textContent = tasks.todo + tasks.inProgress;
+  if (sfSessions) sfSessions.textContent = focus.sessions.length;
 
   // Daily summary message
   try {
@@ -132,9 +128,9 @@ async function refreshDashboard() {
 
   // Task badge in nav
   animateValue("tasks-completed", tasks.done);
-  document.getElementById("task-badge").textContent = tasks.todo + tasks.inProgress;
-  document.getElementById("task-badge").style.display =
-    tasks.todo + tasks.inProgress > 0 ? "inline-flex" : "none";
+  const taskBadge = document.getElementById("task-badge");
+  taskBadge.textContent = tasks.todo + tasks.inProgress;
+  taskBadge.style.display = tasks.todo + tasks.inProgress > 0 ? "inline" : "none";
 
   // Priority tasks for dashboard
   const taskData = await API.get("/api/tasks?status=todo");
@@ -322,7 +318,7 @@ function escapeHtml(str) {
 async function checkActiveFocus() {
   const data = await API.get("/api/focus/active");
   const badge = document.getElementById("focus-badge");
-  if (badge) badge.style.display = data.active ? "inline-flex" : "none";
+  if (badge) badge.style.display = data.active ? "inline" : "none";
 }
 
 // Weekly report download

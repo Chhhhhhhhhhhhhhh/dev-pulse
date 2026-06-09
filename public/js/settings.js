@@ -7,7 +7,7 @@ function markSettingsModified() {
   settingsModified = true;
   const indicator = document.getElementById("settings-save-indicator");
   if (indicator) {
-    indicator.textContent = "● Unsaved changes";
+    indicator.textContent = "Unsaved changes";
     indicator.style.display = "block";
   }
 }
@@ -18,13 +18,11 @@ async function refreshSettings() {
   document.getElementById("daily-goal").value = data.daily_goal_minutes || "240";
   document.getElementById("pomodoro-dur").value = data.pomodoro_duration || "25";
 
-  // GitHub connection status
   const statusDiv = document.getElementById("github-status");
   if (data.github_username) {
     statusDiv.innerHTML = `<span style="color:var(--green)">${t("settings.connected")} <strong>${escapeHtml(data.github_username)}</strong></span>`;
   }
 
-  // Language + Theme pill highlight
   updateLangPills();
   updateThemePills();
   settingsModified = false;
@@ -47,13 +45,12 @@ function updateThemePills() {
   btnLight.classList.toggle("active", theme === "light");
 }
 
-// Theme toggle
 function setTheme(theme, showToastMsg = false) {
   document.documentElement.setAttribute("data-theme", theme);
   localStorage.setItem("dev-pulse-theme", theme);
   updateThemePills();
   if (showToastMsg) {
-    showToast(theme === "light" ? "已切换为浅色主题" : "Switched to dark theme");
+    showToast(theme === "light" ? "Switched to light theme" : "Switched to dark theme");
   }
 }
 
@@ -74,7 +71,7 @@ document.getElementById("btn-lang-zh").addEventListener("click", () => {
   refreshTasks();
   refreshSettings();
   updateTimerDisplay();
-  showToast("已切换为中文");
+  showToast("Switched to Chinese");
 });
 
 document.getElementById("btn-lang-en").addEventListener("click", () => {
@@ -107,7 +104,7 @@ document.getElementById("btn-github-verify").addEventListener("click", async () 
     statusDiv.innerHTML = `<span style="color:var(--green)">${t("settings.connected")} <strong>${escapeHtml(result.username)}</strong></span>`;
     showToast(t("settings.github_ok"));
   } else {
-    statusDiv.innerHTML = `<span style="color:var(--red)">❌ ${t("settings.token_invalid")}</span>`;
+    statusDiv.innerHTML = `<span style="color:var(--red)">${t("settings.token_invalid")}</span>`;
     showToast(t("settings.github_bad"));
   }
 });
@@ -128,7 +125,7 @@ document.getElementById("btn-save-settings").addEventListener("click", async () 
 
   const indicator = document.getElementById("settings-save-indicator");
   if (indicator) {
-    indicator.textContent = "✓ Saved";
+    indicator.textContent = "Saved";
     indicator.className = "settings-save-indicator saved";
     setTimeout(() => { indicator.style.display = "none"; }, 2500);
   }

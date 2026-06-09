@@ -86,7 +86,7 @@ async function refreshTasks() {
       (t) => `
     <div class="task-item">
       <div class="task-checkbox ${t.status === "done" ? "checked" : ""}" data-id="${t.id}" onclick="toggleTask(${t.id})">
-        ${t.status === "done" ? "✓" : ""}
+        ${t.status === "done" ? "OK" : ""}
       </div>
       <div class="task-content" style="flex:1">
         <div class="task-title ${t.status === "done" ? "done" : ""}">${escapeHtml(t.title)}</div>
@@ -98,9 +98,9 @@ async function refreshTasks() {
       </div>
       <div style="display:flex;gap:4px">
         ${t.status !== "done" ? `<button class="btn" style="font-size:0.7em;padding:3px 8px" onclick="startTask(${t.id})">
-          ${t.status === "in_progress" ? "⏸" : "▶"}
+          ${t.status === "in_progress" ? "Pause" : "Start"}
         </button>` : ""}
-        <button class="btn" style="font-size:0.7em;padding:3px 8px;color:var(--red)" onclick="deleteTask(${t.id})">✕</button>
+        <button class="btn" style="font-size:0.7em;padding:3px 8px;color:var(--red)" onclick="deleteTask(${t.id})">&times;</button>
       </div>
     </div>`
     )

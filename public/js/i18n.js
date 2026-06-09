@@ -34,7 +34,7 @@ const I18N = {
     "focus.today_sessions":       { en: "Today's Sessions",       zh: "今日记录" },
     "focus.no_sessions":          { en: "No sessions yet today",  zh: "今天还没有专注记录" },
     "focus.ongoing":              { en: "Ongoing...",             zh: "进行中..." },
-    "focus.completed_toast":      { en: "✅ {mode} completed!",    zh: "✅ {mode} 已完成！" },
+    "focus.completed_toast":      { en: "OK {mode} completed!",    zh: "OK {mode} 已完成！" },
     "focus.notes_prompt":         { en: "What did you work on? (optional)", zh: "刚才做了什么？（选填）" },
     "focus.task_label":           { en: "Link Task",               zh: "关联任务" },
     "focus.stopped_early":        { en: "Stopped early",          zh: "提前结束" },
@@ -119,7 +119,7 @@ const I18N = {
     "settings.daily_goal":        { en: "Daily Goal (minutes)",   zh: "每日目标（分钟）" },
     "settings.pomodoro_dur":      { en: "Pomodoro Duration (minutes)", zh: "番茄钟时长（分钟）" },
     "settings.save":              { en: "Save Settings",          zh: "保存设置" },
-    "settings.connected":         { en: "✅ Connected as",        zh: "✅ 已连接：" },
+    "settings.connected":         { en: "Connected as",        zh: "已连接：" },
     "settings.token_invalid":     { en: "Invalid token. Check your token and try again.", zh: "令牌无效，请检查后重试。" },
     "settings.github_ok":         { en: "GitHub connected successfully!", zh: "GitHub 连接成功！" },
     "settings.github_bad":        { en: "Invalid GitHub token",   zh: "GitHub 令牌无效" },
@@ -134,11 +134,11 @@ const I18N = {
     "settings.theme_light":       { en: "Light",                  zh: "浅色" },
     "settings.theme_hint":        { en: "Dark or light appearance.", zh: "深色或浅色外观。" },
 
-    "report.weekly":              { en: "📄 Export Weekly Report", zh: "📄 导出周报" },
+    "report.weekly":              { en: "Export Weekly Report", zh: "导出周报" },
     "report.downloaded":          { en: "Report downloaded!",     zh: "周报已下载！" },
 
     "title.default":              { en: "Dev-Pulse | Developer Productivity Dashboard", zh: "Dev-Pulse | 开发者生产力仪表盘" },
-    "title.focus_done":           { en: "✅ Session Done! - Dev-Pulse", zh: "✅ 专注完成！- Dev-Pulse" },
+    "title.focus_done":           { en: "Session Done! - Dev-Pulse", zh: "专注完成！- Dev-Pulse" },
   },
 
   t(key, params) {
@@ -172,20 +172,16 @@ const I18N = {
   },
 
   _applyDOM() {
-    // Update title
     document.title = this.t("title.default");
 
-    // Walk all [data-i18n] elements
     document.querySelectorAll("[data-i18n]").forEach(el => {
       el.textContent = this.t(el.getAttribute("data-i18n"));
     });
 
-    // Walk all [data-i18n-placeholder]
     document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
       el.placeholder = this.t(el.getAttribute("data-i18n-placeholder"));
     });
 
-    // Walk all [data-i18n-label]
     document.querySelectorAll("[data-i18n-label]").forEach(el => {
       const label = el.querySelector("label");
       if (label) label.textContent = this.t(el.getAttribute("data-i18n-label"));
@@ -193,10 +189,8 @@ const I18N = {
   }
 };
 
-// Shortcut
 function t(key, params) {
   return I18N.t(key, params);
 }
 
-// Initialize on load
 I18N.load();
